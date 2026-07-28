@@ -1,155 +1,158 @@
-# 📚 DocQuery-AI
+# DocQuery AI
 
-A lightweight Retrieval-Augmented Generation (RAG) application built with **Python**, **ChromaDB**, **Sentence Transformers**, and a **local Gemma LLM**.
+A lightweight **Retrieval-Augmented Generation (RAG)** application built with Python, ChromaDB, Sentence Transformers, and a locally-running Gemma LLM.
 
-The application allows users to ask questions about local documents. Instead of relying on the LLM's internal knowledge, it retrieves the most relevant document chunks from a vector database and uses them as context to generate grounded answers.
-
----
-
-## 🚀 Features
-
-- Local Retrieval-Augmented Generation (RAG)
-- Automatic document chunking
-- Semantic search using embeddings
-- ChromaDB vector database
-- Local Gemma LLM integration
-- Streamlit web interface
-- Source-aware answers
+Instead of relying on a model's internal knowledge, DocQuery retrieves the most relevant chunks from your own documents and uses them as grounded context for every answer.
 
 ---
 
-## 🏗️ Project Structure
+## Features
+
+- Local RAG pipeline — no external API calls
+- Automatic document chunking and ingestion
+- Semantic search via sentence embeddings
+- ChromaDB vector store (persistent, local)
+- Gemma GGUF inference via llama.cpp
+- Streamlit web interface with source attribution
+
+---
+
+## Project Structure
 
 ```
 DocQuery-AI/
-
-├── app.py
-├── ingest.py
-├── query.py
-├── rag.py
-├── config.py
+│
+├── app.py                  # Streamlit entry point
+├── ingest.py               # Document ingestion pipeline
+├── query.py                # Vector search engine
+├── rag.py                  # RAG pipeline (retrieve + generate)
+├── config.py               # Centralised configuration
 ├── requirements.txt
 ├── README.md
-
-├── data/
+│
+├── assets/
+│   └── style.css
+│
+├── components/
+│   ├── chat.py
+│   ├── footer.py
+│   ├── header.py
+│   ├── sidebar.py
+│   └── source_panel.py
+│
+├── utils/
+│   ├── chunker.py          # Text splitting
+│   ├── embedding.py        # Embedding model wrapper
+│   ├── loader.py           # Document loaders
+│   └── prompt.py           # Prompt builder
+│
+├── data/                   # Source documents (not committed)
 │   ├── handbook.txt
 │   ├── library.txt
 │   ├── hostel.txt
 │   └── exam_rules.txt
-
-├── chroma_db/
-
-├── models/
-│   └── gemma.gguf
-
-├── utils/
-│   ├── chunker.py
-│   ├── embedding.py
-│   ├── loader.py
-│   └── prompt.py
+│
+├── chroma_db/              # Persisted vector database (not committed)
+└── model/                  # GGUF model weights (not committed)
+    └── gemma.gguf
 ```
 
 ---
 
-## ⚙️ Technologies
+## Tech Stack
 
-- Python
-- Streamlit
-- ChromaDB
-- Sentence Transformers
-- Gemma GGUF
-- llama.cpp
+| Layer | Technology |
+|---|---|
+| Interface | Streamlit |
+| Vector Store | ChromaDB |
+| Embeddings | Sentence Transformers (`all-MiniLM-L6-v2`) |
+| LLM | Gemma 4 E2B (GGUF) |
+| Inference | llama.cpp / llama-cpp-python |
+| Language | Python 3.12 |
 
 ---
 
-## 🔄 Workflow
+## How It Works
 
 ```
-Documents
-     │
-     ▼
-Chunking
-     │
-     ▼
-Embedding Generation
-     │
-     ▼
-ChromaDB
-     ▲
-     │
-Question
-     │
-     ▼
-Similarity Search
-     │
-     ▼
-Retrieved Context
-     │
-     ▼
-Gemma LLM
-     │
-     ▼
-Answer
+Your Documents
+      │
+      ▼
+  Chunking          Split text into overlapping passages
+      │
+      ▼
+  Embedding         Convert each chunk to a dense vector
+      │
+      ▼
+  ChromaDB          Store and index all vectors locally
+      │
+  ┌───┴───┐
+  │       │
+  │  User Question
+  │       │
+  │       ▼
+  │  Similarity Search   Find the top-K most relevant chunks
+  │       │
+  └──────►▼
+  Retrieved Context
+          │
+          ▼
+      Gemma LLM       Generate a grounded answer
+          │
+          ▼
+        Answer  +  Sources
 ```
 
 ---
 
-## 📚 Example Questions
+## Getting Started
 
-### Attendance
+**1. Clone the repository**
 
-- What is the minimum attendance requirement?
-- Can I appear for exams with 70% attendance?
-- What documents are required for medical leave?
+```bash
+git clone https://github.com/Devansh-Mankad/DocQuery-AI.git
+cd DocQuery-AI
+```
 
-### Library
+**2. Create a virtual environment**
 
-- How many books can students borrow?
-- What happens if I return books late?
-- What are the library timings?
+```bash
+python -m venv .venv
 
-### Hostel
+# Windows
+.venv\Scripts\activate
 
-- When do hostel gates close?
-- Are visitors allowed?
-- What are hostel quiet hours?
+# macOS / Linux
+source .venv/bin/activate
+```
 
-### Examination
-
-- How are students graded?
-- Can I apply for revaluation?
-- When are supplementary exams conducted?
-
----
-
-## 🎯 Learning Objectives
-
-This project demonstrates:
-
-- What is RAG?
-- What are embeddings?
-- What is semantic search?
-- How ChromaDB works
-- Prompt engineering with retrieved context
-- Local LLM integration
-
----
-
-## ▶️ Run
-
-Install dependencies
+**3. Install dependencies**
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Ingest documents
+**4. Add your documents**
+
+Place `.txt`, `.pdf`, or other supported files in the `data/` directory.
+
+**5. Download the model**
+
+Download the Gemma GGUF weights and place the file at:
+
+```
+model/gemma.gguf
+```
+
+**6. Ingest documents**
 
 ```bash
 python ingest.py
 ```
 
-Run application
+This chunks your documents, generates embeddings, and stores them in ChromaDB.
+
+**7. Run the application**
 
 ```bash
 streamlit run app.py
@@ -157,21 +160,66 @@ streamlit run app.py
 
 ---
 
-# 👨‍💻 Author
+## Example Questions
 
-**Devansh Mankad**
+**Attendance**
+- What is the minimum attendance requirement?
+- What documents are required for medical leave?
 
-Computer Engineering Student
+**Library**
+- How many books can students borrow?
+- What are the library timings?
 
-* GitHub: https://github.com/Devansh-Mankad
+**Hostel**
+- When do hostel gates close?
+- Are visitors allowed in the hostel?
+
+**Examination**
+- How are students graded?
+- When are supplementary exams conducted?
+
 ---
 
-# ⭐ Support
+## Configuration
 
-If you found this project useful, consider giving it a **⭐ Star** on GitHub.
+All tuneable parameters live in `config.py`.
+
+| Parameter | Default | Description |
+|---|---|---|
+| `CHUNK_SIZE` | `500` | Characters per chunk |
+| `CHUNK_OVERLAP` | `100` | Overlap between chunks |
+| `TOP_K_RESULTS` | `3` | Chunks retrieved per query |
+| `MAX_TOKENS` | `512` | Max tokens in LLM response |
+| `TEMPERATURE` | `0.2` | Generation temperature |
+| `N_CTX` | `4096` | LLM context window |
 
 ---
 
-# 📄 License
+## Learning Objectives
 
-This project is licensed under the MIT License.
+This project is a practical demonstration of:
+
+- Retrieval-Augmented Generation (RAG) fundamentals
+- How dense embeddings represent meaning
+- Semantic similarity search vs keyword search
+- ChromaDB as a local vector store
+- Prompt engineering with retrieved context
+- Running a quantised LLM entirely offline
+
+---
+
+## Author
+
+**Devansh Mankad** — Computer Engineering Student
+
+- GitHub: (https://github.com/Devansh-Mankad)
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+If you found this useful, consider giving it a ⭐ on GitHub.
